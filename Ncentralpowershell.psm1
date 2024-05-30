@@ -1,5 +1,3 @@
-#$JWTtoken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTb2xhcndpbmRzIE1TUCBOLWNlbnRyYWwiLCJ1c2VyaWQiOjM1ODIzODMzNSwiaWF0IjoxNzE3MDUzOTE1fQ.VpXi0teFRDWHtNPBXy5jkhM7XhSm0qLeoDIHBha2FvA"
-
 $version = 0.1.0
 
 function get-n-centralmoduleversion {
