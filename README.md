@@ -27,48 +27,72 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ## Ussage
 ### BaseURL
 You can set the baseurl by use the following command:<br>
-**set-NCentralBasurl -url example.com**
+```
+set-NCentralBasurl -url example.com
+```
 
 You can view the baseurl with the following command:<br>
-**get-NCentralBasurl**
-
+```
+get-NCentralBasurl
+```
 You can remove the baseurl with the following command:<br>
-**remove-NCentralBasurl**
+```
+remove-NCentralBasurl
+```
 
 ### Authentication Token
 You can create a bearer token with the following command:<br>
-**$auth = Get-NcentralBearerAuth -JWT JWTTOKEN**
+```
+$auth = Get-NcentralBearerAuth -JWT JWTTOKEN
+```
 
 ### Refresh Token !!WILL NOT WORK!!
 create a refreshtoken, but this will not work at this moment.
-**$auth = get-refreshtoken -authtoken $auth.token -refreshtoken $auth.Refreshtoken**
+```
+$auth = get-refreshtoken -authtoken $auth.token -refreshtoken $auth.Refreshtoken
+```
 
 ### ConnectionState
 Check if the connection is active to the N-Central server
-**get-N-Centralconnectionstate -authtoken $auth.token**
+```
+get-N-Centralconnectionstate -authtoken $auth.token
+```
 
 ###Devicefilters
 This will get all the filters they are in the dropdownmenu of the API user.
-**$allfilters = get-ncentraldevicefilters -authtoken $auth.token**
+```
+$allfilters = get-ncentraldevicefilters -authtoken $auth.token
+```
 
 ###devices
 Get all the devices for the API User
-**$devices = get-ncentraldevices -authtoken $auth.token**
+```
+$devices = get-ncentraldevices -authtoken $auth.token
+```
 
 You can also get the devices with a filter, then you must insert the filterId.
-**$devices = get-ncentraldevices -authtoken $auth.token -filterid 1**
+```
+$devices = get-ncentraldevices -authtoken $auth.token -filterid 1
+```
 
 ###Get Custom device properties
 To get the custom device properties of a device you must insert the deviceId,
-**$CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 123456789**
+```
+$CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 123456789
+```
 
 To filter you Custom device properties, you can insert an PropertyId
-**$CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 1738191393 -propertyid 1717105908**
+```
+$CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 1738191393 -propertyid 1717105908
+```
 
 
 ### Get the current module version
 You will get the version of my module with the following command:<br>
-**get-ncentralmoduleversion**
+```
+get-ncentralmoduleversion
+```
+
 
 
 
