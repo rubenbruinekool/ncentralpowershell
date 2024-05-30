@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 
 ## Release notes
+### Version 0.1.1
+* added a query to get all customers
 ### Version 0.1.0
 * Created module with first commando's
 
@@ -56,6 +58,10 @@ $auth = get-refreshtoken -authtoken $auth.token -refreshtoken $auth.Refreshtoken
 Check if the connection is active to the N-Central server
 ```
 get-N-Centralconnectionstate -authtoken $auth.token
+```
+### Custommers
+```
+get-NCentralCustomers -authtoken $auth.token
 ```
 
 ###Devicefilters
