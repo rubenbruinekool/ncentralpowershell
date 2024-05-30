@@ -1,6 +1,6 @@
 $version = 0.1.0
 
-function get-n-centralmoduleversion {
+function get-ncentralmoduleversion {
     write-host $version
   }
 
@@ -163,7 +163,7 @@ function get-ncentraldevices {
 }
 
 function get-ncentralcustomdeviceproperties {
-    # $CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 1738191393 -propertyid 1717105908
+    # $CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 123456789 -propertyid 123456789
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
@@ -195,6 +195,7 @@ function get-ncentralcustomdeviceproperties {
 Export-ModuleMember -Function "set-NCentralBasurl",
 "get-NCentralBasurl",
 "remove-NCentralBasurl",
+"get-ncentralmoduleversion",
 "Get-NcentralBearerAuth",
 "get-refreshtoken",
 "get-NCentralconnectionstate",
