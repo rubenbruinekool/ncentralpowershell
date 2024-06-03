@@ -1,8 +1,8 @@
-$version = 0.2.0
+$version = "0.2.0" 
 $moduleBaseUrl = [System.Environment]::GetEnvironmentVariable("Ncentralps_BASE_URL", "User")
 
 function get-ncentralmoduleversion {
-    write-host $version
+    write-host "N-Centralpowershell module version: "$version
   }
 
 Function set-NCentralBasurl{
@@ -247,6 +247,7 @@ function get-ncentralcustomdeviceproperties {
     )    
     
     $uriCDP =  $moduleBaseUrl + "/api/devices/$deviceid/custom-properties"
+    write-host $uriCDP
     $authheaders = @{"Authorization" = "Bearer $authtoken"}
     $CDPrequest = (Invoke-RestMethod -Uri $uriCDP -Headers $authheaders -Method GET)
     
