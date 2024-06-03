@@ -12,7 +12,9 @@ Install the powershell module to download the ncentralpowershell folder and copy
 This module is based on version 2024.2.0.20 of N-Central
 
 # Import module
+```
 import-module -name "ncentralpowershell"
+```
 
 ## Disclaimer and Warning
 **Be careful!** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
