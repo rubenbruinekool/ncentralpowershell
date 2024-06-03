@@ -70,8 +70,14 @@ get-NCentralCustomers -authtoken $auth.token
 ```
 
 ### Custom Customer properties
+To get the custom Customer properties of a Customer you must insert the CustomerID,
 ```
-get-ncentralcustomcustomerproperties -authtoken $auth.token -Customerid 122 -propertyid 123456789
+$CCP = get-ncentralcustomcustomerproperties -authtoken $auth.token -Customerid 123
+```
+
+To filter you Custom Customer properties, you can insert an PropertyId
+```
+$CCP = get-ncentralcustomcustomerproperties -authtoken $auth.token -Customerid 123 -propertyid 123456789
 ```
 
 ### Devicefilters
@@ -99,7 +105,7 @@ $CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 12345
 
 To filter you Custom device properties, you can insert an PropertyId
 ```
-$CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 1738191393 -propertyid 1717105908
+$CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 123456789 -propertyid 123456789
 ```
 
 
