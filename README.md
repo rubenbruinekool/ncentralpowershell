@@ -23,6 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 
 ## Release notes
+### Version 0.2.0
+* Use now Environment variable for the baseurl
+* Added new function get-ncentralcustomcustomerproperties
 ### Version 0.1.1
 * added a query to get all customers
 ### Version 0.1.0
@@ -65,6 +68,12 @@ get-N-Centralconnectionstate -authtoken $auth.token
 ```
 get-NCentralCustomers -authtoken $auth.token
 ```
+
+### Custom Customer properties
+```
+get-ncentralcustomcustomerproperties -authtoken $auth.token -Customerid 122 -propertyid 123456789
+```
+
 
 ###Devicefilters
 This will get all the filters they are in the dropdownmenu of the API user.
