@@ -74,14 +74,13 @@ get-NCentralCustomers -authtoken $auth.token
 get-ncentralcustomcustomerproperties -authtoken $auth.token -Customerid 122 -propertyid 123456789
 ```
 
-
-###Devicefilters
+### Devicefilters
 This will get all the filters they are in the dropdownmenu of the API user.
 ```
 $allfilters = get-ncentraldevicefilters -authtoken $auth.token
 ```
 
-###devices
+### devices
 Get all the devices for the API User
 ```
 $devices = get-ncentraldevices -authtoken $auth.token
@@ -92,7 +91,7 @@ You can also get the devices with a filter, then you must insert the filterId.
 $devices = get-ncentraldevices -authtoken $auth.token -filterid 1
 ```
 
-###Get Custom device properties
+### Get Custom device properties
 To get the custom device properties of a device you must insert the deviceId,
 ```
 $CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 123456789
