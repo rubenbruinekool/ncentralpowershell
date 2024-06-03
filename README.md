@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ### Version 0.2.0
 * Use now Environment variable for the baseurl
 * Added new function get-ncentralcustomcustomerproperties
+* Bugfixes
 ### Version 0.1.1
 * added a query to get all customers
 ### Version 0.1.0
