@@ -1,22 +1,31 @@
-$version = 0.1.1
+$version = 0.2.0
+$moduleBaseUrl = [System.Environment]::GetEnvironmentVariable("Ncentralps_BASE_URL", "User")
 
 function get-ncentralmoduleversion {
     write-host $version
   }
 
 Function set-NCentralBasurl{
+    #set-NCentralBasurl -url "rmm.example.com"
     param(
         [string]$url
     )
-    $script:baseUrl = "https://"+$url
+    $ncentralbaseurl = "https://"+$url
+    [System.Environment]::SetEnvironmentVariable("Ncentralps_BASE_URL", "$ncentralbaseurl", "User")
+    $script:moduleBaseUrl = $ncentralbaseurl
 }
 
 function get-NCentralBasurl{
-    write-host $script:baseurl
+    $baseUrl = [System.Environment]::GetEnvironmentVariable("Ncentralps_BASE_URL", "User")
+    if ($null -eq $baseUrl) {
+        Write-Error "BASE_URL is not set."
+    } else {
+        Write-Output $baseUrl
+    }
 }
 
 function remove-NCentralBasurl {
-    $script:baseUrl = ""
+    [System.Environment]::SetEnvironmentVariable("Ncentralps_BASE_URL", $null, "User")
 }
 
 function Get-NcentralBearerAuth {
@@ -27,12 +36,13 @@ function Get-NcentralBearerAuth {
         [string]$JWTtoken
     )
     try {
-        $uriauth = $script:baseurl + "/api/auth/authenticate"
+       
+        $uriauth = $moduleBaseUrl + "/api/auth/authenticate"
         $AuthResponse = Invoke-RestMethod -Uri $uriauth -Headers @{ "Authorization" = "Bearer $JWTToken" } -Method Post -ContentType "application/json"
         $AccessToken = $AuthResponse.tokens.access.token
         $rtoken = $AuthResponse.tokens.refresh.token
         $AuthHeaders = @{ "Authorization" = "Bearer $AccessToken" }
-        $urivalidate = $script:baseurl + "/api/auth/validate"
+        $urivalidate = $moduleBaseUrl + "/api/auth/validate"
         $AuthValidate = Invoke-RestMethod -Uri $urivalidate -Headers $AuthHeaders -Method Get -ContentType "application/json"
         #return $AuthValidate.message
         $results = [PSCustomObject]@{
@@ -58,12 +68,12 @@ function get-refreshtoken {
         [string]$refreshtoken
     )
     
-    $urivalidate = $script:baseurl + "/api/auth/validate"
+    $urivalidate = $moduleBaseUrl + "/api/auth/validate"
     $authheaders = @{ "Authorization" = "Bearer $authtoken" }
     $AuthValidate = Invoke-RestMethod -Uri $urivalidate -Headers $authheaders -Method Get -ContentType "application/json"
     if ($AuthValidate.message -ne "The token is valid.") {
         try{
-            $urirefresh = $script:baseurl + "/api/auth/refresh"
+            $urirefresh = $moduleBaseUrl + "/api/auth/refresh"
             $authheaders = @{ "Authorization" = "Bearer $authtoken" }
             $refreshtoken = Invoke-RestMethod -Uri $urirefresh -Headers $authheaders -body $refreshtoken -Method POST -ContentType "text/plain"
             $AccessToken = $refreshtoken.tokens.access.token
@@ -92,18 +102,16 @@ function get-NCentralconnectionstate{
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
         [string]$authtoken
     )
-    $urivalidate = $script:baseurl + "/api/auth/validate"
+    $urivalidate = $moduleBaseUrl + "/api/auth/validate"
     $authheaders = @{ "Authorization" = "Bearer $authtoken" }
     $AuthValidate = Invoke-RestMethod -Uri $urivalidate -Headers $authheaders -Method Get -ContentType "application/json"
     If ($AuthValidate.message -eq "The Token is valid."){
-        Write-host "Connection is active, you have a connection to $script:baseurl"
+        Write-host "Connection is active, you have a connection to $moduleBaseUrl"
     }
     else{
         Throw "connection is not active"
     }
 }
-
-
 
 function get-NCentralCustomers{
     # get-NCentralCustomers -authtoken $auth.token
@@ -115,7 +123,7 @@ function get-NCentralCustomers{
 
     $allCustomers = @()
 
-    $uricustomers = $script:baseurl + "/api/customers"
+    $uricustomers = $moduleBaseUrl + "/api/customers"
     $authheaders = @{ "Authorization" = "Bearer $authtoken" }
 
     while ($null -ne $uricustomers -and $uricustomers -ne ""){
@@ -126,7 +134,7 @@ function get-NCentralCustomers{
 
             if ($Customerrequest._links -and $Customerrequest._links.nextPage) {
                 $nextpage = $Customerrequest._links.nextPage
-                $uricustomers = $script:baseurl + $nextpage
+                $uricustomers = $moduleBaseUrl + $nextpage
                 } 
                 else{
                     $uricustomers = $null
@@ -141,6 +149,31 @@ function get-NCentralCustomers{
     return $allCustomers
 }
 
+function get-ncentralcustomcustomerproperties {
+    # $CCP = get-ncentralcustomcustomerproperties -authtoken $auth.token -Customerid 122 -propertyid 123456789
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+        [string]$authtoken,
+        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
+        [string]$Customerid,
+        [Parameter(Mandatory = $false, Position = 2, ValueFromPipeline = $true)]
+        [string]$PropertyID
+    )    
+    
+    $uriCCP =  $moduleBaseUrl + "/api/org-units/$Customerid/custom-properties"
+    $authheaders = @{"Authorization" = "Bearer $authtoken"}
+    $CCPrequest = (Invoke-RestMethod -Uri $uriCCP -Headers $authheaders -Method GET)
+    
+    If ($null -ne $PropertyID -and $PropertyID -ne ""){
+        write-host $PropertyID
+        $CCPresponse = $CCPrequest.properties | where-object { $_.propertyId -eq $PropertyID }
+    }
+    else{
+        $CCPresponse = $CCPrequest.properties
+    }
+    return $CCPresponse
+}
 
 function get-ncentraldevicefilters {
     #$allfilters = get-ncentraldevicefilters -authtoken $auth.token
@@ -149,7 +182,7 @@ function get-ncentraldevicefilters {
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
         [string]$authtoken
     )
-    $uridevicefilters= $script:baseurl + "/api/device-filters"
+    $uridevicefilters= $moduleBaseUrl + "/api/device-filters"
     $authheaders = @{ "Authorization" = "Bearer $authtoken" }
     $Devicefilters = Invoke-RestMethod -Uri $uridevicefilters -Headers $authheaders -Method GET -ContentType "application/json"
     $alldropdownfilters = $Devicefilters.data
@@ -170,10 +203,10 @@ function get-ncentraldevices {
     $alldevices = @()
    
     if($null -eq $filterid){
-        $uridevices = $script:baseurl + "/api/devices"
+        $uridevices = $moduleBaseUrl + "/api/devices"
     }
     else {
-        $uridevices =  $script:baseurl + "/api/devices?filterId=$filterid&sortOrder=ASC"
+        $uridevices =  $moduleBaseUrl + "/api/devices?filterId=$filterid&sortOrder=ASC"
     }
 
     $alldevices = @()
@@ -187,7 +220,7 @@ function get-ncentraldevices {
 
             if ($getdevices._links -and $getdevices._links.nextPage) {
                 $nextpage = $getdevices._links.nextPage
-                $uridevices = $script:baseurl + $nextpage + "&filterId=$filterid&sortOrder=ASC"
+                $uridevices = $moduleBaseUrl + $nextpage + "&filterId=$filterid&sortOrder=ASC"
                 } 
                 else{
                     $uridevices = $null
@@ -213,7 +246,7 @@ function get-ncentralcustomdeviceproperties {
         [string]$PropertyID
     )    
     
-    $uriCDP =  $script:baseurl + "/api/devices/$deviceid/custom-properties"
+    $uriCDP =  $moduleBaseUrl + "/api/devices/$deviceid/custom-properties"
     $authheaders = @{"Authorization" = "Bearer $authtoken"}
     $CDPrequest = (Invoke-RestMethod -Uri $uriCDP -Headers $authheaders -Method GET)
     
@@ -228,8 +261,6 @@ function get-ncentralcustomdeviceproperties {
 }
 
 
-
-
 ##Export Functions
 Export-ModuleMember -Function "set-NCentralBasurl",
 "get-NCentralBasurl",
@@ -238,6 +269,8 @@ Export-ModuleMember -Function "set-NCentralBasurl",
 "Get-NcentralBearerAuth",
 "get-refreshtoken",
 "get-NCentralconnectionstate",
+"get-NCentralCustomers",
+"get-ncentralcustomcustomerproperties",
 "get-ncentraldevices",
 "get-ncentralcustomdeviceproperties"
 
