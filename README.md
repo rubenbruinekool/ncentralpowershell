@@ -65,7 +65,7 @@ Check if the connection is active to the N-Central server
 ```
 get-N-Centralconnectionstate -authtoken $auth.token
 ```
-### Custommers
+### Customers
 ```
 get-NCentralCustomers -authtoken $auth.token
 ```
