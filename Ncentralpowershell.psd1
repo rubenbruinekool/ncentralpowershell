@@ -73,7 +73,8 @@ FunctionsToExport = 'get-N-Centralconnectionstate', 'get-NCentralBasurl',
                'Get-NcentralBearerAuth', 'get-ncentraldevices', 'get-refreshtoken', 
                'remove-NCentralBasurl', 'set-NCentralBasurl', 'get-NCentralCustomers',
                'get-ncentralcustomcustomerproperties', 'get-ncentralmoduleversion',
-               'get-ncentralcustomdeviceproperties', 'get-ncentraldevicefilters'
+               'get-ncentralcustomdeviceproperties', 'get-ncentraldevicefilters',
+               'get-ncentraldeviceassetinfo', 'get-ncentraldevicemonitoringstatus'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
