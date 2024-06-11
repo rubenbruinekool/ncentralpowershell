@@ -1,4 +1,4 @@
-$version = "0.2.0" 
+$version = "0.3.0" 
 $moduleBaseUrl = [System.Environment]::GetEnvironmentVariable("Ncentralps_BASE_URL", "User")
 
 function get-ncentralmoduleversion {
@@ -234,6 +234,52 @@ function get-ncentraldevices {
     return $alldevices
 }
 
+function get-ncentraldeviceassetinfo {
+    # $deviceasset = get-ncentraldeviceassetinfo -authtoken $auth.token -deviceid 122456789 
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+        [string]$authtoken,
+        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
+        [string]$deviceid
+    )
+
+    $urideviceasset =  $moduleBaseUrl + "/api/devices/$deviceid/assets"
+    $authheaders = @{ "Authorization" = "Bearer $authtoken" }
+    try{
+        $getdeviceassetinfo = Invoke-RestMethod -Uri $urideviceasset -Headers $authheaders -Method GET            
+        }
+    catch{
+        write-error "Ër is een fout : $_"
+        break
+    }
+    return $getdeviceassetinfo.data
+}
+
+function get-ncentraldevicemonitoringstatus {
+    # $devicemonitoringstatus = get-ncentraldevicemonitoringstatus -authtoken $auth.token -deviceid 123456789 
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+        [string]$authtoken,
+        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
+        [string]$deviceid
+    )
+    $uridevicemonitoringstatus =  $moduleBaseUrl + "/api/devices/$deviceid/service-monitor-status"
+    write-host $uridevicemonitoringstatus
+
+    $authheaders = @{ "Authorization" = "Bearer $authtoken" }
+    try{
+        $getdevicemonitoringstatus = Invoke-RestMethod -Uri $uridevicemonitoringstatus -Headers $authheaders -Method GET            
+        }
+    catch{
+        write-error "Ër is een fout : $_"
+        break
+    }
+    return $getdevicemonitoringstatus.data
+}
+
+
 function get-ncentralcustomdeviceproperties {
     # $CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 123456789 -propertyid 123456789
     [CmdletBinding()]
@@ -272,6 +318,8 @@ Export-ModuleMember -Function "set-NCentralBasurl",
 "get-NCentralconnectionstate",
 "get-NCentralCustomers",
 "get-ncentralcustomcustomerproperties",
+"get-ncentraldevicefilters",
 "get-ncentraldevices",
-"get-ncentralcustomdeviceproperties"
-
+"get-ncentralcustomdeviceproperties",
+"get-ncentraldeviceassetinfo",
+"get-ncentraldevicemonitoringstatus"
