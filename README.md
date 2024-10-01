@@ -23,6 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 
 ## Release notes
+### Version 0.4.0
+* Created a working refresh-token commando
+* Refresh token changed to update-NcentralBearerAuth
+* rewrite the get-NCentralconnectionstate
 ### Version 0.2.0
 * added new function get-ncentraldeviceassetinfo
 * added new function get-ncentraldevicemonitoringstatus
@@ -57,11 +61,13 @@ You can create a bearer token with the following command:<br>
 $auth = Get-NcentralBearerAuth -JWT JWTTOKEN
 ```
 
-### Refresh Token !!WILL NOT WORK!!
-create a refreshtoken, but this will not work at this moment.
+### Refresh Token
+create a new token with the refresh token.
 ```
-$auth = get-refreshtoken -authtoken $auth.token -refreshtoken $auth.Refreshtoken
+$rauth = update-NcentralBearerAuth -authtoken $auth.token -refreshtoken $auth.Refreshtoken
+$auth = $rauth
 ```
+
 
 ### ConnectionState
 Check if the connection is active to the N-Central server
