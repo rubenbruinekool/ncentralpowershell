@@ -12,7 +12,7 @@
 # | | | (_) \ V  V /  __/ |  \__ \ | | |  __/ | | | |  | | (_) | (_| | |_| | |  __/
 # \_|  \___/ \_/\_/ \___|_|  |___/_| |_|\___|_|_| \_|  |_/\___/ \__,_|\__,_|_|\___|
 ####################################################################################
-# Created by Ruben Bruinekool, version 0.3.1
+# Created by Ruben Bruinekool, version 0.4.0
 ####################################################################################
 
 $version = "0.4.0" 
@@ -82,7 +82,7 @@ function Get-NcentralBearerAuth {
     }
 }
 
-function get-refreshtoken {
+function update-NcentralBearerAuth {
     #$auth = get-refreshtoken -auth $auth.token -refreshtoken $auth.refreshtoken
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
@@ -410,7 +410,7 @@ Export-ModuleMember -Function "set-NCentralBasurl",
 "remove-NCentralBasurl",
 "get-ncentralmoduleversion",
 "Get-NcentralBearerAuth",
-"get-refreshtoken",
+"update-NcentralBearerAuth",
 "get-NCentralconnectionstate",
 "get-NCentralCustomers",
 "get-ncentralcustomcustomerproperties",
