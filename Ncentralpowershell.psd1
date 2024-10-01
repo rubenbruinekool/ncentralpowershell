@@ -70,11 +70,12 @@ Description = 'NAble N-Central Module for making REST API Cals (c)Ruben Bruineko
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = 'get-N-Centralconnectionstate', 'get-NCentralBasurl', 
-               'Get-NcentralBearerAuth', 'get-ncentraldevices', 'get-refreshtoken', 
+               'Get-NcentralBearerAuth', 'get-ncentraldevices', 'update-NcentralBearerAuth', 
                'remove-NCentralBasurl', 'set-NCentralBasurl', 'get-NCentralCustomers',
                'get-ncentralcustomcustomerproperties', 'get-ncentralmoduleversion',
                'get-ncentralcustomdeviceproperties', 'get-ncentraldevicefilters',
-               'get-ncentraldeviceassetinfo', 'get-ncentraldevicemonitoringstatus'
+               'get-ncentraldeviceassetinfo', 'get-ncentraldevicemonitoringstatus',
+               'set-ncentralcustomdeviceproperty', 'get-Ncentralactiveissues'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
