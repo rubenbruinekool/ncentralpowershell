@@ -1,5 +1,23 @@
-$version = "0.3.0" 
+####################################################################################
+# _   _        _____            _             _                                   
+# | \ | |      /  __ \          | |           | |                                  
+# |  \| |______| /  \/ ___ _ __ | |_ _ __ __ _| |                                  
+# | . ` |______| |    / _ \ '_ \| __| '__/ _` | |                                  
+# | |\  |      | \__/\  __/ | | | |_| | | (_| | |                                  
+# \_| \_/       \____/\___|_| |_|\__|_|  \__,_|_|                                  
+# ______                          _          _ _  ___  ___          _       _      
+# | ___ \                        | |        | | | |  \/  |         | |     | |     
+# | |_/ /____      _____ _ __ ___| |__   ___| | | | .  . | ___   __| |_   _| | ___ 
+# |  __/ _ \ \ /\ / / _ \ '__/ __| '_ \ / _ \ | | | |\/| |/ _ \ / _` | | | | |/ _ \
+# | | | (_) \ V  V /  __/ |  \__ \ | | |  __/ | | | |  | | (_) | (_| | |_| | |  __/
+# \_|  \___/ \_/\_/ \___|_|  |___/_| |_|\___|_|_| \_|  |_/\___/ \__,_|\__,_|_|\___|
+####################################################################################
+# Created by Ruben Bruinekool, version 0.3.1
+####################################################################################
+
+$version = "0.4.0" 
 $moduleBaseUrl = [System.Environment]::GetEnvironmentVariable("Ncentralps_BASE_URL", "User")
+write-host "De volgende url is ingesteld als standaard vanuit de module: $modulebaseurl"                                                                             
 
 function get-ncentralmoduleversion {
     write-host "N-Centralpowershell module version: "$version
@@ -8,11 +26,13 @@ function get-ncentralmoduleversion {
 Function set-NCentralBasurl{
     #set-NCentralBasurl -url "rmm.example.com"
     param(
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
         [string]$url
     )
     $ncentralbaseurl = "https://"+$url
     [System.Environment]::SetEnvironmentVariable("Ncentralps_BASE_URL", "$ncentralbaseurl", "User")
-    $script:moduleBaseUrl = $ncentralbaseurl
+    $moduleBaseUrl = $ncentralbaseurl
+    write-host "NCentralbaseurl ingesteld op $modulebaseurl"
 }
 
 function get-NCentralBasurl{
@@ -40,7 +60,9 @@ function Get-NcentralBearerAuth {
         $uriauth = $moduleBaseUrl + "/api/auth/authenticate"
         $AuthResponse = Invoke-RestMethod -Uri $uriauth -Headers @{ "Authorization" = "Bearer $JWTToken" } -Method Post -ContentType "application/json"
         $AccessToken = $AuthResponse.tokens.access.token
+        $expiresecondsaccess = $AuthResponse.tokens.access.expirySeconds
         $rtoken = $AuthResponse.tokens.refresh.token
+        $expiresecondsrefresh = $AuthResponse.tokens.refresh.expirySeconds
         $AuthHeaders = @{ "Authorization" = "Bearer $AccessToken" }
         $urivalidate = $moduleBaseUrl + "/api/auth/validate"
         $AuthValidate = Invoke-RestMethod -Uri $urivalidate -Headers $AuthHeaders -Method Get -ContentType "application/json"
@@ -49,7 +71,9 @@ function Get-NcentralBearerAuth {
             status = $AuthValidate.message
             header = $AuthHeaders
             token  = $AccessToken
+            expireaccesstoken = $expiresecondsaccess
             Refreshtoken = $rtoken
+            expirerefreshtoken = $expiresecondsrefresh
         }
         return $results
     }
@@ -59,39 +83,49 @@ function Get-NcentralBearerAuth {
 }
 
 function get-refreshtoken {
-    # $auth = get-refreshtoken -authtoken $auth.token -refreshtoken $auth.Refreshtoken
-    [CmdletBinding()]
+    #$auth = get-refreshtoken -auth $auth.token -refreshtoken $auth.refreshtoken
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
         [string]$authtoken,
-        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
         [string]$refreshtoken
     )
-    
-    $urivalidate = $moduleBaseUrl + "/api/auth/validate"
-    $authheaders = @{ "Authorization" = "Bearer $authtoken" }
-    $AuthValidate = Invoke-RestMethod -Uri $urivalidate -Headers $authheaders -Method Get -ContentType "application/json"
-    if ($AuthValidate.message -ne "The token is valid.") {
-        try{
-            $urirefresh = $moduleBaseUrl + "/api/auth/refresh"
-            $authheaders = @{ "Authorization" = "Bearer $authtoken" }
-            $refreshtoken = Invoke-RestMethod -Uri $urirefresh -Headers $authheaders -body $refreshtoken -Method POST -ContentType "text/plain"
-            $AccessToken = $refreshtoken.tokens.access.token
-            $rtoken = $refreshtoken.tokens.refresh.token
-            $AuthHeaders = @{ "Authorization" = "Bearer $AccessToken" }
-            $AuthValidate = Invoke-RestMethod -Uri $urivalidate -Headers $AuthHeaders -Method Get -ContentType "application/json"
-            write-host $AuthValidate.message
-            $refreshresults = [PSCustomObject]@{
-                status = $AuthValidate.message
-                header = $AuthHeaders
-                token  = $AccessToken
-                Refreshtoken = $rtoken
+
+    $validateURL = $moduleBaseUrl + "/api/auth/validate"
+    $authheaders = @{
+        "accept"        = "application/json"
+        "Authorization" = "Bearer $($authtoken)"
+    }
+    $ValidateResponse = Invoke-RestMethod -Uri $validateURL -Method Get -Headers $authheaders -ErrorAction SilentlyContinue
+    if ($ValidateResponse.message -eq "The token is valid.") {
+        try {
+            $RefreshURL = $moduleBaseUrl + "/api/auth/refresh"
+            $RefreshHeaders = @{
+                "accept"        = "*/*"
+                "Authorization" = "Bearer $($authtoken)"
+                "Content-Type"  = "text/plain"
             }
-            return $refreshresults
+            $RefreshResponse = Invoke-RestMethod -Uri $RefreshURL -Method Post -Headers $RefreshHeaders -Body $refreshtoken
+            
+            $AccessToken = $RefreshResponse.tokens.access.token
+            $expiresecondsaccess = $RefreshResponse.tokens.access.expirySeconds
+            $rtoken = $RefreshResponse.tokens.refresh.token
+            $expiresecondsrefresh = $RefreshResponse.tokens.refresh.expirySeconds
+        
+            $results = [PSCustomObject]@{
+                token  = $AccessToken
+                expireaccesstoken = $expiresecondsaccess
+                Refreshtoken = $rtoken
+                expirerefreshtoken = $expiresecondsrefresh
+            }
+            return $results
         }
         catch {
             Throw "Refresh Token expired, start a new session"
         }
+    }
+    else{
+        write-host $ValidateResponse.message
     }
 }
 
@@ -102,14 +136,17 @@ function get-NCentralconnectionstate{
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
         [string]$authtoken
     )
-    $urivalidate = $moduleBaseUrl + "/api/auth/validate"
-    $authheaders = @{ "Authorization" = "Bearer $authtoken" }
-    $AuthValidate = Invoke-RestMethod -Uri $urivalidate -Headers $authheaders -Method Get -ContentType "application/json"
-    If ($AuthValidate.message -eq "The Token is valid."){
+
+    try{
+        $urivalidate = $moduleBaseUrl + "/api/auth/validate"
+        $authheaders = @{ "Authorization" = "Bearer $authtoken" }
+        $AuthValidate = Invoke-RestMethod -Uri $urivalidate -Headers $authheaders -Method Get -ContentType "application/json" -ErrorAction Stop -Verbose:$false
+        Write-Verbose "Token is still valid, not refreshing"
         Write-host "Connection is active, you have a connection to $moduleBaseUrl"
     }
-    else{
-        Throw "connection is not active"
+    catch{
+        Write-Verbose "Token is no longer valid. Trying to refresh"
+        write-host "Token is not valid, it must be refreshed"
     }
 }
 
@@ -150,7 +187,8 @@ function get-NCentralCustomers{
 }
 
 function get-ncentralcustomcustomerproperties {
-    # $CCP = get-ncentralcustomcustomerproperties -authtoken $auth.token -Customerid 122 -propertyid 123456789
+    # $CCP = get-ncentralcustomcustomerproperties -authtoken $auth.token -Customerid 122 -propertyid 1634038205
+    # $CCP = get-ncentralcustomcustomerproperties -authtoken $auth.token -Customerid 122
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
@@ -160,17 +198,23 @@ function get-ncentralcustomcustomerproperties {
         [Parameter(Mandatory = $false, Position = 2, ValueFromPipeline = $true)]
         [string]$PropertyID
     )    
-    
-    $uriCCP =  $moduleBaseUrl + "/api/org-units/$Customerid/custom-properties"
-    $authheaders = @{"Authorization" = "Bearer $authtoken"}
-    $CCPrequest = (Invoke-RestMethod -Uri $uriCCP -Headers $authheaders -Method GET)
-    
+    write-host $moduleBaseUrl
     If ($null -ne $PropertyID -and $PropertyID -ne ""){
-        write-host $PropertyID
-        $CCPresponse = $CCPrequest.properties | where-object { $_.propertyId -eq $PropertyID }
+        $uriCCP =  $moduleBaseUrl + "/api/org-units/$Customerid/custom-properties/$propertyID"
     }
     else{
-        $CCPresponse = $CCPrequest.properties
+        $uriCCP =  $moduleBaseUrl + "/api/org-units/$Customerid/custom-properties"
+    }
+    write-host $uriCCP
+
+    $authheaders = @{"Authorization" = "Bearer $authtoken"}
+    $CCPrequest = (Invoke-RestMethod -Uri $uriCCP -Headers $authheaders -Method GET)
+
+    If ($null -ne $PropertyID -and $PropertyID -ne ""){
+    $CCPresponse = $CCPrequest
+    }
+    else{
+        $CCPresponse = $CCPrequest.data
     }
     return $CCPresponse
 }
@@ -235,7 +279,7 @@ function get-ncentraldevices {
 }
 
 function get-ncentraldeviceassetinfo {
-    # $deviceasset = get-ncentraldeviceassetinfo -authtoken $auth.token -deviceid 122456789 
+    # $deviceasset = get-ncentraldeviceassetinfo -authtoken $auth.token -deviceid 1496519025 
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
@@ -257,7 +301,7 @@ function get-ncentraldeviceassetinfo {
 }
 
 function get-ncentraldevicemonitoringstatus {
-    # $devicemonitoringstatus = get-ncentraldevicemonitoringstatus -authtoken $auth.token -deviceid 123456789 
+    # $devicemonitoringstatus = get-ncentraldevicemonitoringstatus -authtoken $auth.token -deviceid 1496519025 
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
@@ -282,7 +326,7 @@ function get-ncentraldevicemonitoringstatus {
 
 function get-ncentralcustomdeviceproperties {
     # $CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 123456789 -propertyid 123456789
-    [CmdletBinding()]
+    # $CDP = get-ncentralcustomdeviceproperties -authtoken $auth.token -deviceid 123456789
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
         [string]$authtoken,
@@ -291,20 +335,72 @@ function get-ncentralcustomdeviceproperties {
         [Parameter(Mandatory = $false, Position = 2, ValueFromPipeline = $true)]
         [string]$PropertyID
     )    
-    
-    $uriCDP =  $moduleBaseUrl + "/api/devices/$deviceid/custom-properties"
-    write-host $uriCDP
-    $authheaders = @{"Authorization" = "Bearer $authtoken"}
-    $CDPrequest = (Invoke-RestMethod -Uri $uriCDP -Headers $authheaders -Method GET)
-    
+
     If ($null -ne $PropertyID -and $PropertyID -ne ""){
-        $CDPresponse = $CDPrequest.data | where-object { $_.propertyId -eq $PropertyID }
+        $uriCDP =  $moduleBaseUrl + "/api/devices/$deviceid/custom-properties/$propertyID"
     }
     else{
-        $CDPresponse = $CDPrequest.data
+        $uriCDP =  $moduleBaseUrl + "/api/devices/$deviceid/custom-properties"
     }
+    write-host $uriCDP
+
+    $auth  = @{"Authorization" = "Bearer $authtoken"}
+    $CDPrequest = (Invoke-RestMethod -Uri $uriCDP -Headers $authheaders -Method GET)
+    
+    $CDPresponse = $CDPrequest
 
     return $CDPresponse
+}
+function set-ncentralcustomdeviceproperty {
+    # $setCDP = set-ncentralcustomdeviceproperty -authtoken $auth.token -deviceid 123456789 -propertyid 123456789 -cdpvalue test
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+        [string]$authtoken,
+        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
+        [string]$deviceid,
+        [Parameter(Mandatory = $true, Position = 2, ValueFromPipeline = $true)]
+        [string]$PropertyID,
+        [Parameter(Mandatory = $true, Position = 3, ValueFromPipeline = $true)]
+        [string]$cdpvalue
+    )    
+    
+    $uriCDP =  $moduleBaseUrl + "/api/devices/$deviceid/custom-properties/$PropertyID"
+    $Body = @{
+        "value" = $cdpvalue
+    } | ConvertTo-Json
+    $authheaders = @{
+        "Authorization" = "Bearer $authtoken"
+        "content-type" = "application/json"
+    }
+    $setCDPrequest = (Invoke-RestMethod -Uri $uriCDP -Headers $authheaders -Body $Body -Method PUT)
+    write-host $setCDPrequest
+    $setCDPresponse = $setCDPrequest
+
+    return $setCDPresponse
+}
+
+
+function get-Ncentralactiveissues {
+    #$activeissues = get-Ncentralactiveissues -authtoken $auth.token -orgid "50"
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+        [string]$authtoken,
+        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $true)]
+        [string]$Orgid
+    )    
+
+    $uriactiveissue =  $moduleBaseUrl + "/api/org-units/$orgid/active-issues"
+    write-host $uriactiveissue
+    $authheaders = @{ 
+        "Authorization" = "Bearer $authtoken"
+        "content-type" = "application/json"
+    }
+    $getactiveissues = (Invoke-RestMethod -Uri $uriactiveissue -Headers $authheaders -Method Get)
+    write-host $getactiveissues
+
+    return $getactiveissues
 }
 
 
@@ -321,5 +417,8 @@ Export-ModuleMember -Function "set-NCentralBasurl",
 "get-ncentraldevicefilters",
 "get-ncentraldevices",
 "get-ncentralcustomdeviceproperties",
+"set-ncentralcustomdeviceproperty",
 "get-ncentraldeviceassetinfo",
-"get-ncentraldevicemonitoringstatus"
+"get-ncentraldevicemonitoringstatus",
+"get-Ncentralactiveissues"
+
