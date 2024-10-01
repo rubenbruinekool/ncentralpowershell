@@ -83,7 +83,7 @@ function Get-NcentralBearerAuth {
 }
 
 function update-NcentralBearerAuth {
-    #$auth = get-refreshtoken -auth $auth.token -refreshtoken $auth.refreshtoken
+    #$auth = update-NcentralBearerAuth -auth $auth.token -refreshtoken $auth.refreshtoken
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
         [string]$authtoken,
